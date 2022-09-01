@@ -7,7 +7,7 @@ cwd = os.path.abspath('')
 import re
 import altair as alt
 #%%
-st.beta_set_page_config(page_title='Entwicklung von Suchbegriffen im Vergleich')
+st.set_page_config(page_title='Entwicklung von Suchbegriffen im Vergleich')
 st.title('Entwicklung von Suchbegriffen im Vergleich')
 st.write('Für folgende Auswertung die Mastertabelle (...) um die ersten 50.000 Zeilen der aktuellen KW ergänzen, und mit dem ensprechenden Zeistempel '
          'ergänzen. Aktuelle Reporte stammen aus Vendor Central: https://vendorcentral.amazon.de/analytics/dashboard/searchTerms'
