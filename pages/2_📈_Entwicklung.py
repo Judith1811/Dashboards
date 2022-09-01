@@ -7,10 +7,12 @@ cwd = os.path.abspath('')
 import re
 import altair as alt
 #%%
-st.set_page_config(page_title='Entwicklung von Suchbegriffen im Vergleich')
+st.beta_set_page_config(page_title='Entwicklung von Suchbegriffen im Vergleich')
 st.title('Entwicklung von Suchbegriffen im Vergleich')
 st.write('Für folgende Auswertung die Mastertabelle (...) um die ersten 50.000 Zeilen der aktuellen KW ergänzen, und mit dem ensprechenden Zeistempel '
-         'ergänzen. Aktuelle Reporte stammen aus Vendor Central: https://vendorcentral.amazon.de/analytics/dashboard/searchTerms Auswertungsbereich: '
+         'ergänzen. Aktuelle Reporte stammen aus Vendor Central: https://vendorcentral.amazon.de/analytics/dashboard/searchTerms'
+         ''
+         'Auswertungsbereich: '
          'wöchentlich, Abteilung: Amazon.de')
 #%%
 uploaded_file = st.file_uploader('Report aus Vendor Central hier hochladen:', type='xlsx')
@@ -22,6 +24,9 @@ if uploaded_file:
     df.columns = new_header
     df.rename(columns=df.iloc[0])
     df.drop(df.index[1])
+
+    df['Suchfrequenz-Rang ']=pd.to_numeric(df['Suchfrequenz-Rang '])
+    df['Suchfrequenz-Rang ']=df['Suchfrequenz-Rang '].astype(int)
 
     dsi = df.Suchbegriff.str.contains('persil |persil$', flags = re.IGNORECASE, regex = True, na = False)
     df1 = df[dsi]

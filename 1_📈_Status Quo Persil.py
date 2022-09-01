@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
 #import plotly.express as px
-import re
+import regex as re
 import numpy as np
 import plotly.graph_objs as go
 
-st.set_page_config(page_title='Amazon Suchvolumen Persil')
+st.beta_set_page_config(page_title='Amazon Suchvolumen Persil')
 st.title('Amazon Suchvolumen Persil')
 st.write('Für folgende Auswertung den aktuellen Report aus Vendor Central (https://vendorcentral.amazon.de/analytics/dashboard/searchTerms) herunterladen. '
          'Auswertungsbereich frei wählbar und Abteilung "Amazon.de" oder "Drugstore" möglich.')
@@ -19,6 +19,8 @@ if uploaded_file:
     df.columns = new_header
     df.rename(columns=df.iloc[0])
     df.drop(df.index[1])
+    df['Suchfrequenz-Rang ']=pd.to_numeric(df['Suchfrequenz-Rang '])
+    df['Suchfrequenz-Rang ']=df['Suchfrequenz-Rang '].astype(int)
 
     st.write('Auswertung der Suchbegriffe erfolgt auf der Ebene', df.iloc[0]['Abteilung'],'.')
 
@@ -40,7 +42,6 @@ if uploaded_file:
         optionpersil = st.selectbox('Wähle einen Suchbegriff',dropdown_persil)
         persil = df.loc[(df['Suchbegriff'] == optionpersil)]
         persil.reset_index(drop=True,inplace=True)
-        st.write('Der Suchbegriff',optionpersil, 'belegt im Ranking Platz', persil.loc[0]['Suchfrequenz-Rang '],'von',df['Suchfrequenz-Rang '].iat[-1])
 
     with col2:
         "####  Ranking Suchbegriffe rund um Ariel:"
@@ -48,15 +49,20 @@ if uploaded_file:
         optionariel = st.selectbox('Wähle einen Suchbegriff',dropdown_ariel)
         ariel = df.loc[(df['Suchbegriff'] == optionariel)]
         ariel.reset_index(drop=True,inplace=True)
-        st.write('Der Suchbegriff',optionariel, 'belegt im Ranking Platz', ariel.loc[0]['Suchfrequenz-Rang '],'von',df['Suchfrequenz-Rang '].iat[-1])
 
     col1, col2 = st.columns(2)
 
     with col1:
-        st.metric(label=optionpersil, value=persil.loc[0]['Suchfrequenz-Rang '], delta=ariel.loc[0]['Suchfrequenz-Rang ']-persil.loc[0]['Suchfrequenz-Rang '])
+        #st.metric(label=optionpersil, value=persil.loc[0]['Suchfrequenz-Rang '], delta=ariel.loc[0]['Suchfrequenz-Rang ']-persil.loc[0]['Suchfrequenz-Rang '])
+        st.metric(label=optionpersil, value=persil.loc[0]['Suchfrequenz-Rang '])
+
+        st.write('Der Suchbegriff',optionpersil, 'belegt im Ranking Platz', persil.loc[0]['Suchfrequenz-Rang '],'von',df['Suchfrequenz-Rang '].iat[-1])
 
     with col2:
-        st.metric(label=optionariel, value=ariel.loc[0]['Suchfrequenz-Rang '], delta=persil.loc[0]['Suchfrequenz-Rang ']-ariel.loc[0]['Suchfrequenz-Rang '])
+        #st.metric(label=optionariel, value=ariel.loc[0]['Suchfrequenz-Rang '], delta=persil.loc[0]['Suchfrequenz-Rang ']-ariel.loc[0]['Suchfrequenz-Rang '])
+        st.metric(label=optionariel, value=ariel.loc[0]['Suchfrequenz-Rang '])
+
+        st.write('Der Suchbegriff',optionariel, 'belegt im Ranking Platz', ariel.loc[0]['Suchfrequenz-Rang '],'von',df['Suchfrequenz-Rang '].iat[-1])
 
     '#### TOP Suchbegriffe rund um Persil:'
     st.dataframe(toppersil)
