@@ -5,3 +5,4 @@ regex
 numpy
 openpyxl
 transformers
+io
