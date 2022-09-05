@@ -5,3 +5,4 @@ regex
 numpy
 openpyxl
 transformers
+opencv_python_headless==4.6.0.66
