@@ -15,7 +15,7 @@ if uploaded_file is not None:
     uploaded_file.seek(0,0)
     st.markdown('---')
     #text_io = io.TextIOWrapper(uploaded_file)
-    df = pd.read_excel(uploaded_file, engine='openpyxl')
+    df = pd.read_excel(uploaded_file, engine='openpyxl', low_memory=False)
     #text_io.seek(0)
     new_header = df.iloc[0]
     df = df[1:]
