@@ -12,7 +12,7 @@ st.write('Für folgende Auswertung den aktuellen Report aus Vendor Central (http
 uploaded_file = st.file_uploader('Report aus Vendor Central hier hochladen:', type='xlsx')
 #if st.button('Start'):
 if uploaded_file is not None:
-    #uploaded_file.seek(0)
+    uploaded_file.seek(0,0)
     st.markdown('---')
     #text_io = io.TextIOWrapper(uploaded_file)
     df = pd.read_excel(uploaded_file, engine='openpyxl')
