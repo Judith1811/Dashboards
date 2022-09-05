@@ -9,19 +9,14 @@ st.title('Amazon Suchvolumen Persil')
 st.write('Für folgende Auswertung den aktuellen Report aus Vendor Central (https://vendorcentral.amazon.de/analytics/dashboard/searchTerms) herunterladen. '
          'Auswertungsbereich frei wählbar und Abteilung "Amazon.de" oder "Drugstore" möglich.')
 
-
-@st.cache(allow_output_mutation=True)
-def load_data(file):
-    df = pd.read_excel(file)
-    return df
 uploaded_file = st.file_uploader('Report aus Vendor Central hier hochladen:', type='xlsx')
 #if st.button('Start'):
 if uploaded_file is not None:
-    uploaded_file.seek(0)
+    #uploaded_file.seek(0)
     st.markdown('---')
-    text_io = io.TextIOWrapper(uploaded_file)
-    df = load_data(uploaded_file)
-    text_io.seek(0)
+    #text_io = io.TextIOWrapper(uploaded_file)
+    df = pd.read_excel(uploaded_file, engine='openpyxl')
+    #text_io.seek(0)
     new_header = df.iloc[0]
     df = df[1:]
     df.columns = new_header
