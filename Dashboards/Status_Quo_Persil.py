@@ -5,7 +5,8 @@ import numpy as np
 import plotly.graph_objs as go
 import io
 
-st.title('Amazon Suchvolumen Persil')
+st.title('Amazon Suchvolumen')
+st.subheader('Henkel vs. Wettbewerber')
 st.write('Für folgende Auswertung den aktuellen Report aus Vendor Central (https://vendorcentral.amazon.de/analytics/dashboard/searchTerms) herunterladen. '
          'Auswertungsbereich frei wählbar und Abteilung "Amazon.de" oder "Drugstore" möglich.')
 
@@ -152,36 +153,39 @@ if uploaded_file is not None:
         vergleich_ariel.reset_index(inplace=True, drop=True)
         vergleich_ariel
 
-    title = st.text_input('Suchbegriff', 'Trage hier den gewünschten Suchbegriff ein')
     '#### TOP 3 Klickrate des Suchbegriffs'
-    waschmittelpods = df.loc[(df['Suchbegriff'] == title)]
-    waschmittelpods1 = waschmittelpods[['col1','Klickrate #1']]
-    waschmittelpods1.rename(columns={'col1':'Produktname','Klickrate #1':'Klickrate'},inplace=True)
-    waschmittelpods2 = waschmittelpods[['col2','Klickrate #2']]
-    waschmittelpods2.rename(columns={'col2':'Produktname','Klickrate #2':'Klickrate'},inplace=True)
-    waschmittelpods3 = waschmittelpods[['col3','Klickrate #3']]
-    waschmittelpods3.rename(columns={'col3':'Produktname','Klickrate #3':'Klickrate'},inplace=True)
-    waschmittelpodssum = pd.concat([waschmittelpods1, waschmittelpods2, waschmittelpods3]).drop_duplicates().reset_index(drop=True)
-    waschmittelpodssum['Produkt'] = waschmittelpodssum['Produktname'].str.split().str[:4].str.join(sep=" ")
-    waschmittelpodssum = waschmittelpodssum.drop('Produktname',axis=1)
-    waschmittelpodssum['Klickrate']=pd.to_numeric(waschmittelpodssum['Klickrate'])
-    waschmittelpodssum.loc['sum']=1-waschmittelpodssum.sum(numeric_only=True, axis=0)
-    waschmittelpodssum.replace(np.nan,'Others',inplace=True)
-    labels = waschmittelpodssum['Produkt'].value_counts().index
-    values = waschmittelpodssum['Klickrate'].values
+    title = st.text_input('Suchbegriff', 'Trage hier den gewünschten Suchbegriff ein')
+    if title != "Trage hier den gewünschten Suchbegriff ein":
+        waschmittelpods = df.loc[(df['Suchbegriff'] == title)]
+        waschmittelpods1 = waschmittelpods[['col1','Klickrate #1']]
+        waschmittelpods1.rename(columns={'col1':'Produktname','Klickrate #1':'Klickrate'},inplace=True)
+        waschmittelpods2 = waschmittelpods[['col2','Klickrate #2']]
+        waschmittelpods2.rename(columns={'col2':'Produktname','Klickrate #2':'Klickrate'},inplace=True)
+        waschmittelpods3 = waschmittelpods[['col3','Klickrate #3']]
+        waschmittelpods3.rename(columns={'col3':'Produktname','Klickrate #3':'Klickrate'},inplace=True)
+        waschmittelpodssum = pd.concat([waschmittelpods1, waschmittelpods2, waschmittelpods3]).drop_duplicates().reset_index(drop=True)
+        waschmittelpodssum['Produkt'] = waschmittelpodssum['Produktname'].str.split().str[:4].str.join(sep=" ")
+        waschmittelpodssum = waschmittelpodssum.drop('Produktname',axis=1)
+        waschmittelpodssum['Klickrate']=pd.to_numeric(waschmittelpodssum['Klickrate'])
+        waschmittelpodssum.loc['sum']=1-waschmittelpodssum.sum(numeric_only=True, axis=0)
+        waschmittelpodssum.replace(np.nan,'Others',inplace=True)
+        labels = waschmittelpodssum['Produkt'].value_counts().index
+        values = waschmittelpodssum['Klickrate'].values
 
-    bridge = df.loc[(df['Suchbegriff'] == title)]
-    bridge.reset_index(drop=True,inplace=True)
-    st.write('Der Suchbegriff',title, 'belegt im Ranking Platz', bridge.loc[0]['Suchfrequenz-Rang '])
+        bridge = df.loc[(df['Suchbegriff'] == title)]
+        bridge.reset_index(drop=True,inplace=True)
+        st.write('Der Suchbegriff',title, 'belegt im Ranking Platz', bridge.loc[0]['Suchfrequenz-Rang '])
 
-    fig = go.Figure(
-        go.Pie(
-            labels = labels,
-            values = values,
-            hoverinfo = "label+percent",
-            textinfo = "percent"
-        ))
-    st.plotly_chart(fig)
+        fig = go.Figure(
+            go.Pie(
+                labels = labels,
+                values = values,
+                hoverinfo = "label+percent",
+                textinfo = "percent"
+            ))
+        st.plotly_chart(fig)
+
+    st.caption('Kontakt: Judith Paaßen (judith.paassen@henkel.com)')
     ###################################################################################################
 
 
