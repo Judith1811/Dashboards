@@ -44,7 +44,7 @@ if uploaded_file is not None:
     toppersil = df[dsi]
     toppersil = toppersil.dropna()
     toppersil.drop(columns=['Abteilung'],inplace=True)
-    toppersil.reset_index(inplace = True)
+    toppersil.reset_index(drop= True, inplace = True)
 
     choice2dollar = choice2+'$'
     choice2dollar2 = '$'+choice2
@@ -58,7 +58,7 @@ if uploaded_file is not None:
     topariel = df[dsi]
     topariel = topariel.dropna()
     topariel.drop(columns=['Abteilung'],inplace=True)
-    topariel.reset_index(inplace = True)
+    topariel.reset_index(drop= True, inplace = True)
 
     pattern = [c1, c2]
     pattern2= '|'.join(pattern)
@@ -66,7 +66,7 @@ if uploaded_file is not None:
     toppersilariel = df[dsi]
     toppersilariel = toppersilariel.dropna()
     toppersilariel.drop(columns=['Abteilung'],inplace=True)
-    toppersilariel.reset_index(inplace = True)
+    toppersilariel.reset_index(drop= True, inplace = True)
     ###################################################################################################
 
     col1, col2 = st.columns(2)
@@ -117,6 +117,8 @@ if uploaded_file is not None:
     products_persil = pd.concat([product1_persil,product2_persil,product3_persil]).drop_duplicates().reset_index(drop=True)
     products_persil = products_persil.dropna()
     products_persil.drop(columns=['Abteilung'],inplace=True)
+    products_persil.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
+    products_persil.rename(columns={'col1':'Produktname #1','col2':'Produktname #2','col3':'Produktname #3'},inplace=True)
     st.dataframe(products_persil)
 
     '#### Wettbewerbermarke unter den TOP 3 der angeklickten ASINs:'
@@ -129,28 +131,35 @@ if uploaded_file is not None:
     products_ariel = pd.concat([product1_ariel,product2_ariel,product3_ariel]).drop_duplicates().reset_index(drop=True)
     products_ariel = products_ariel.dropna()
     products_ariel.drop(columns=['Abteilung'],inplace=True)
+    products_ariel.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
+    products_ariel.rename(columns={'col1':'Produktname #1','col2':'Produktname #2','col3':'Produktname #3'},inplace=True)
     st.dataframe(products_ariel)
 
     col1, col2 = st.columns(2)
 
     with col1:
         st.caption('Generische Suchbegriffe, bei denen unter den TOP 3 geklickten Produkten nur die Henkel Marke auftaucht und nicht die Wettbewerbermarke')
-        vergleich_persil = products_persil.iloc[: , [0,1]]
+        vergleich_persil = products_persil
+        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #1'].str.contains(choice2) == False]
+        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #2'].str.contains(choice2) == False]
+        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #3'].str.contains(choice2) == False]
+        vergleich_persil = vergleich_persil[vergleich_persil['Suchbegriff'].str.contains(choice1) == False]
+        vergleich_persil.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
+        vergleich_persil = vergleich_persil.iloc[: , [0,1]]
         vergleich_persil['Marke'] = choice1
-        vergleich_persil = vergleich_persil[~vergleich_persil.Suchbegriff.str.contains("persil ")]
-        vergleich_persil = vergleich_persil[~vergleich_persil.Suchbegriff.str.contains(" persil")]
-        vergleich_persil = vergleich_persil[vergleich_persil.Suchbegriff != 'persil']
-        vergleich_persil.reset_index(inplace=True, drop=True)
         vergleich_persil
+
 
     with col2:
         st.caption('Generische Suchbegriffe, bei denen unter den TOP 3 geklickten Produkten nur die Wettbewerbermarke auftaucht und nicht die Henkel Marke')
-        vergleich_ariel = products_ariel.iloc[: , [0,1]]
+        vergleich_ariel = products_ariel
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #1'].str.contains(choice1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #2'].str.contains(choice1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #3'].str.contains(choice1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Suchbegriff'].str.contains(choice2) == False]
+        vergleich_ariel.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
+        vergleich_ariel = vergleich_ariel.iloc[: , [0,1]]
         vergleich_ariel['Marke'] = choice2
-        vergleich_ariel = vergleich_ariel[~vergleich_ariel.Suchbegriff.str.contains("ariel ")]
-        vergleich_ariel = vergleich_ariel[~vergleich_ariel.Suchbegriff.str.contains(" ariel")]
-        vergleich_ariel = vergleich_ariel[vergleich_ariel.Suchbegriff != 'ariel']
-        vergleich_ariel.reset_index(inplace=True, drop=True)
         vergleich_ariel
 
     '#### TOP 3 Klickrate des Suchbegriffs'
