@@ -10,15 +10,19 @@ import altair as alt
 st.set_page_config(page_title='Entwicklung von Suchbegriffen im Vergleich')
 st.title('Entwicklung von Suchbegriffen im Vergleich')
 st.write('Für folgende Auswertung die Mastertabelle (...) um die ersten 50.000 Zeilen der aktuellen KW ergänzen, und mit dem ensprechenden Zeistempel '
-         'ergänzen. Aktuelle Reporte stammen aus Vendor Central: https://vendorcentral.amazon.de/analytics/dashboard/searchTerms'
+         'ergänzen. Aktuelle Reporte stammen aus Vendor Central: https://vendorcentral.amazon.de/analytics/dashboard/searchTerms '
          ''
          'Auswertungsbereich: '
          'wöchentlich, Abteilung: Amazon.de')
 #%%
-uploaded_file = st.file_uploader('Report aus Vendor Central hier hochladen:', type='xlsx')
-if uploaded_file:
+@st.cache(allow_output_mutation=True)
+def load_data(file):
+    df = pd.read_excel(file)
+    return df
+uploaded_file2 = st.file_uploader('Report aus Vendor Central hier hochladen:', type='xlsx')
+if uploaded_file2 is not None:
     st.markdown('---')
-    df = pd.read_excel(uploaded_file, engine='openpyxl')
+    df = pd.read_excel(uploaded_file2, engine='openpyxl')
     new_header = df.iloc[0]
     df = df[1:]
     df.columns = new_header
@@ -28,7 +32,25 @@ if uploaded_file:
     df['Suchfrequenz-Rang ']=pd.to_numeric(df['Suchfrequenz-Rang '])
     df['Suchfrequenz-Rang ']=df['Suchfrequenz-Rang '].astype(int)
 
-    dsi = df.Suchbegriff.str.contains('persil |persil$', flags = re.IGNORECASE, regex = True, na = False)
+    '# Markenspezifische Suchbegriffe'
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        choice1 = st.radio('Wähle eine Henkel Marke',('Persil','Somat','WC Frisch','Perwoll','Weißer Riese','Spee'))
+
+    with col2:
+        choice2 = st.radio('Wähle eine Wettbewerbermarke',('Ariel','Finish','Coral','WC Ente','Frosch'))
+
+    choice1dollar = choice1+'$'
+    choice1dollar2 = '$'+choice1
+    choice1space = choice1+ ' '
+    choice1space2 = ' '+choice1
+    choice1combined = [choice1, choice1dollar, choice1dollar2, choice1space, choice1space2]
+    c1= '|'.join(choice1combined)
+    c1 = '"'+c1+'"'
+
+    dsi = df.Suchbegriff.str.contains(c1, flags = re.IGNORECASE, regex = True, na = False)
     df1 = df[dsi]
 
     dropdown_persil = df1['Suchbegriff'].values.tolist()
@@ -38,15 +60,11 @@ if uploaded_file:
             temp_list.append(i)
     dropdown_persil = temp_list
 
-    '#### Wähle einen Suchbegriff 1'
+    '#### Wähle einen Suchbegriff 1 rund um die Henkel Marke'
     optionpersil = st.selectbox('Suchbegriff 1:',dropdown_persil)
     persilpowerbar= df1.loc[(df1['Suchbegriff'] == optionpersil)]
-    #persilpowerbar = persilpowerbar.iloc[: , :-1]
     #%%
     ranking1 = persilpowerbar.iloc[:, [2,15]]
-    #ranking1['Woche'] = ranking1.iloc[:,1].copy()
-    #ranking1['Woche'] = ranking1['Woche'].map(lambda x: str(x)[:-5])
-    #ranking1 = ranking1.iloc[:,[0,2]]
     ranking1.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 1"},inplace=True)
     ranking1['Suchbegriff 1']*= -1
 
@@ -78,17 +96,29 @@ if uploaded_file:
 
 ######################
 
-    dropdown_persil2 = dropdown_persil
+    choice2dollar = choice2+'$'
+    choice2dollar2 = '$'+choice2
+    choice2space = choice2+ ' '
+    choice2space2 = ' '+choice2
+    choice2combined = [choice2, choice2dollar, choice2dollar2, choice2space, choice2space2]
+    c2= '|'.join(choice2combined)
+    c2 = '"'+c2+'"'
 
-    '#### Wähle einen Suchbegriff 2'
+    dsi2 = df.Suchbegriff.str.contains(c2, flags = re.IGNORECASE, regex = True, na = False)
+    df12 = df[dsi2]
+
+    dropdown_persil = df12['Suchbegriff'].values.tolist()
+    temp_list = []
+    for i in dropdown_persil:
+        if i not in temp_list:
+            temp_list.append(i)
+    dropdown_persil2 = temp_list
+
+    '#### Wähle einen Suchbegriff 2 rund um die Wettbewerbermarke'
     optionpersil2 = st.selectbox('Suchbegriff 2:',dropdown_persil2)
-    persilpowerbar2= df1.loc[(df1['Suchbegriff'] == optionpersil2)]
-    #persilpowerbar2 = persilpowerbar2.iloc[: , :-1]
+    persilpowerbar2= df12.loc[(df12['Suchbegriff'] == optionpersil2)]
 
     ranking2 = persilpowerbar2.iloc[:, [2,15]]
-    #ranking2['Woche'] = ranking2.iloc[:,1].copy()
-    #ranking2['Woche'] = ranking2['Woche'].map(lambda x: str(x)[:-5])
-    #ranking2 = ranking2.iloc[:,[0,2]]
     ranking2.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 2"},inplace=True)
     ranking2['Suchbegriff 2']*= -1
 
@@ -128,4 +158,55 @@ if uploaded_file:
     '#### Ranking der Suchbegriffe 1 und 2 im Vergleich'
     st.line_chart(data=ranking, x='Woche', y=["Suchbegriff 1","Suchbegriff 2"])
 
-######################
+#########################################################################################################################
+# Generische Suchbegriffe Waschen
+
+######### Suchbegriff Waschen 1
+
+    '# Generische Suchbegriffe'
+
+    generisch_wäsche = df.Suchbegriff.str.contains('wäsche|waschmittel', flags = re.IGNORECASE, regex = True, na = False)
+    df_generisch_wäsche = df[generisch_wäsche]
+
+    dropdown_generisch_wäsche = df_generisch_wäsche['Suchbegriff'].values.tolist()
+    temp_list = []
+    for i in dropdown_generisch_wäsche:
+        if i not in temp_list:
+            temp_list.append(i)
+    dropdown_generisch_wäsche = temp_list
+
+    wahl_generisch_wäsche=st.selectbox('Generischer Suchbegriff 1 Waschen:',dropdown_generisch_wäsche)
+
+    df_generisch_wäsche_deep_a= df_generisch_wäsche.loc[(df_generisch_wäsche['Suchbegriff'] == wahl_generisch_wäsche)]
+
+    df_generisch_wäsche_deep_a = df_generisch_wäsche_deep_a.iloc[:, [2,15]]
+    df_generisch_wäsche_deep_a.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff Waschen 1"},inplace=True)
+    df_generisch_wäsche_deep_a['Suchbegriff Waschen 1']*= -1
+
+    '#### Ranking des Suchbegriffs 1'
+    st.line_chart(data=df_generisch_wäsche_deep_a, x='Woche', y='Suchbegriff Waschen 1')
+######### Suchbegriff Waschen 2
+    dropdown_generisch_wäsche = df_generisch_wäsche['Suchbegriff'].values.tolist()
+    temp_list = []
+    for i in dropdown_generisch_wäsche:
+        if i not in temp_list:
+            temp_list.append(i)
+    dropdown_generisch_wäsche = temp_list
+
+    wahl_generisch_wäsche=st.selectbox('Generischer Suchbegriff 2 Waschen:',dropdown_generisch_wäsche)
+
+    df_generisch_wäsche_deep_b= df_generisch_wäsche.loc[(df_generisch_wäsche['Suchbegriff'] == wahl_generisch_wäsche)]
+
+    df_generisch_wäsche_deep_b = df_generisch_wäsche_deep_b.iloc[:, [2,15]]
+    df_generisch_wäsche_deep_b.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff Waschen 2"},inplace=True)
+    df_generisch_wäsche_deep_b['Suchbegriff Waschen 2']*= -1
+
+    '#### Ranking des Suchbegriffs 2'
+    st.line_chart(data=df_generisch_wäsche_deep_b, x='Woche', y='Suchbegriff Waschen 2')
+######### Suchbegriff Waschen 1 und 2 im Vergleich
+    df_generisch_wäsche_deep = pd.merge(df_generisch_wäsche_deep_a, df_generisch_wäsche_deep_b, on=['Woche'])
+    df_generisch_wäsche_deep = df_generisch_wäsche_deep[['Woche','Suchbegriff Waschen 1','Suchbegriff Waschen 2']]
+    df_generisch_wäsche_deep.set_index('Woche')
+
+    '#### Ranking der Suchbegriffe 1 und 2 im Vergleich'
+    st.line_chart(data=df_generisch_wäsche_deep, x='Woche', y=["Suchbegriff Waschen 1","Suchbegriff Waschen 2"])
