@@ -26,13 +26,13 @@ if uploaded_file1 is not None:
     df['Suchfrequenz-Rang ']=pd.to_numeric(df['Suchfrequenz-Rang '])
     df['Suchfrequenz-Rang ']=df['Suchfrequenz-Rang '].astype(int)
 
+    #Beschreibung der Auswertungsebene/Abteilung
     st.write('Auswertung der Suchbegriffe erfolgt auf der Ebene', df.iloc[0]['Abteilung'],'.')
 
+    #User wählt Henkel Marke und Wettbewerbermarke aus
     col1, col2 = st.columns(2)
-
     with col1:
         choice1 = st.radio('Wähle eine Henkel Marke',('botclean','Bref','Love Nature','Persil','Perwoll','Pril','Sidolin','Sil','Somat','Spee','Vernel','Weißer Riese','WC Frisch'))
-
     with col2:
         choice2 = st.radio('Wähle eine Wettbewerbermarke',('Ajax','Ariel','Bissell','Cillit Bang','Coral','Dr. Beckmann','Ecover','Fairy','Finish','Frosch','Lenor','Sagrotan','Vanish','WC Ente'))
 
@@ -40,35 +40,28 @@ if uploaded_file1 is not None:
 #########################################################################################################################
 # Hilfestellungen / Muster
 
-    choice1dollar = choice1+'$'
-    choice1dollar2 = '$'+choice1
-    choice1space = choice1+ ' '
-    choice1space2 = ' '+choice1
-    choice1combined = [choice1, choice1dollar, choice1dollar2, choice1space, choice1space2]
-    c1= '|'.join(choice1combined)
-    c1 = '"'+c1+'"'
+    # Markennamen formatieren
+    search1 = '\\b(' + choice1 + ')\\b'
+    search1_lower = search1.lower()
 
-    dsi = df.Suchbegriff.str.contains(c1, flags = re.IGNORECASE, regex = True, na = False)
+    search2 = '\\b(' + choice2 + ')\\b'
+    search2_lower = search2.lower()
+
+    # Dfs erstellen, die nur Suchbegriffe mit den jeweiligen Markennamen erhalten
+    #Henkel Marke
+    dsi = df.Suchbegriff.str.contains(search1, flags = re.IGNORECASE, regex = True, na = False)
     toppersil = df[dsi]
     toppersil = toppersil.dropna()
     toppersil.drop(columns=['Abteilung'],inplace=True)
     toppersil.reset_index(drop= True, inplace = True)
-
-    choice2dollar = choice2+'$'
-    choice2dollar2 = '$'+choice2
-    choice2space = choice2+ ' '
-    choice2space2 = ' '+choice2
-    choice2combined = [choice2, choice2dollar, choice2dollar2, choice2space, choice2space2]
-    c2= '|'.join(choice2combined)
-    c2 = '"'+c2+'"'
-
-    dsi = df.Suchbegriff.str.contains(c2, flags = re.IGNORECASE, regex = True, na = False)
+    #Wettbewerbermarke
+    dsi = df.Suchbegriff.str.contains(search2, flags = re.IGNORECASE, regex = True, na = False)
     topariel = df[dsi]
     topariel = topariel.dropna()
     topariel.drop(columns=['Abteilung'],inplace=True)
     topariel.reset_index(drop= True, inplace = True)
-
-    pattern = [c1, c2]
+    #Henkel + Wettbewerbermarke
+    pattern = [search1, search2]
     pattern2= '|'.join(pattern)
     dsi = df.Suchbegriff.str.contains(pattern2, flags = re.IGNORECASE, regex = True, na = False)
     toppersilariel = df[dsi]
@@ -77,7 +70,7 @@ if uploaded_file1 is not None:
     toppersilariel.reset_index(drop= True, inplace = True)
 
 #########################################################################################################################
-# einzelnes Ranking
+# Ranking einzelner Suchbegriffe
 
     col1, col2 = st.columns(2)
 
@@ -99,16 +92,14 @@ if uploaded_file1 is not None:
 
     with col1:
         st.metric(label=optionpersil, value=persil.loc[0]['Suchfrequenz-Rang '])
-
         st.write('Der Suchbegriff',optionpersil, 'belegt im Ranking Platz', persil.loc[0]['Suchfrequenz-Rang '],'von',df['Suchfrequenz-Rang '].iat[-1])
 
     with col2:
         st.metric(label=optionariel, value=ariel.loc[0]['Suchfrequenz-Rang '])
-
         st.write('Der Suchbegriff',optionariel, 'belegt im Ranking Platz', ariel.loc[0]['Suchfrequenz-Rang '],'von',df['Suchfrequenz-Rang '].iat[-1])
 
 #########################################################################################################################
-# TOP Suchbegriffe
+# TOP Suchbegriffe aus oben erstellten Dfs abbilden
 
     '#### TOP Suchbegriffe rund um Henkel Marke:'
     st.dataframe(toppersil)
@@ -124,11 +115,11 @@ if uploaded_file1 is not None:
 
     '#### Henkel Marke unter den TOP 3 der angeklickten ASINs:'
     df.rename(columns={"Produkttitel #1": "col1","Produkttitel #2": "col2","Produkttitel #3": "col3"},inplace=True)
-    ids_persil = df.col1.str.contains(c1, flags = re.IGNORECASE, regex = True, na = False)
+    ids_persil = df.col1.str.contains(search1, flags = re.IGNORECASE, regex = True, na = False)
     product1_persil = df[ids_persil]
-    ids_persil = df.col2.str.contains(c1, flags = re.IGNORECASE, regex = True, na = False)
+    ids_persil = df.col2.str.contains(search1, flags = re.IGNORECASE, regex = True, na = False)
     product2_persil = df[ids_persil]
-    ids_persil = df.col3.str.contains(c1, flags = re.IGNORECASE, regex = True, na = False)
+    ids_persil = df.col3.str.contains(search1, flags = re.IGNORECASE, regex = True, na = False)
     product3_persil = df[ids_persil]
     products_persil = pd.concat([product1_persil,product2_persil,product3_persil]).drop_duplicates().reset_index(drop=True)
     products_persil = products_persil.dropna()
@@ -139,11 +130,11 @@ if uploaded_file1 is not None:
     st.dataframe(products_persil)
 
     '#### Wettbewerbermarke unter den TOP 3 der angeklickten ASINs:'
-    ids_ariel = df.col1.str.contains(c2, flags = re.IGNORECASE, regex = True, na = False)
+    ids_ariel = df.col1.str.contains(search2, flags = re.IGNORECASE, regex = True, na = False)
     product1_ariel = df[ids_ariel]
-    ids_ariel = df.col2.str.contains(c2, flags = re.IGNORECASE, regex = True, na = False)
+    ids_ariel = df.col2.str.contains(search2, flags = re.IGNORECASE, regex = True, na = False)
     product2_ariel = df[ids_ariel]
-    ids_ariel = df.col3.str.contains(c2, flags = re.IGNORECASE, regex = True, na = False)
+    ids_ariel = df.col3.str.contains(search2, flags = re.IGNORECASE, regex = True, na = False)
     product3_ariel = df[ids_ariel]
     products_ariel = pd.concat([product1_ariel,product2_ariel,product3_ariel]).drop_duplicates().reset_index(drop=True)
     products_ariel = products_ariel.dropna()
@@ -158,26 +149,24 @@ if uploaded_file1 is not None:
     col1, col2 = st.columns(2)
 
     with col1:
-        c1 = c1.lower()
         st.caption('Generische Suchbegriffe, bei denen unter den TOP 3 geklickten Produkten nur die Henkel Marke auftaucht und nicht die Wettbewerbermarke')
         vergleich_persil = products_persil
-        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #1'].str.contains(c2) == False]
-        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #2'].str.contains(c2) == False]
-        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #3'].str.contains(c2) == False]
-        vergleich_persil = vergleich_persil[vergleich_persil['Suchbegriff'].str.contains(c1) == False]
+        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #1'].str.contains(search2) == False]
+        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #2'].str.contains(search2) == False]
+        vergleich_persil = vergleich_persil[vergleich_persil['Produktname #3'].str.contains(search2) == False]
+        vergleich_persil = vergleich_persil[vergleich_persil['Suchbegriff'].str.contains(search1_lower) == False]
         vergleich_persil = vergleich_persil.iloc[: , [0,1]]
         vergleich_persil['Marke'] = choice1
         vergleich_persil.reset_index(drop= True, inplace = True)
         vergleich_persil
 
     with col2:
-        c2 = c2.lower()
         st.caption('Generische Suchbegriffe, bei denen unter den TOP 3 geklickten Produkten nur die Wettbewerbermarke auftaucht und nicht die Henkel Marke')
         vergleich_ariel = products_ariel
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #1'].str.contains(c1) == False]
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #2'].str.contains(c1) == False]
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #3'].str.contains(c1) == False]
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Suchbegriff'].str.contains(c2) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #1'].str.contains(search1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #2'].str.contains(search1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #3'].str.contains(search1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Suchbegriff'].str.contains(search2_lower) == False]
         vergleich_ariel.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
         vergleich_ariel = vergleich_ariel.iloc[: , [0,1]]
         vergleich_ariel['Marke'] = choice2
@@ -185,7 +174,7 @@ if uploaded_file1 is not None:
         vergleich_ariel
 
 #########################################################################################################################
-# einzelne Suchbegriffe
+# einzelne Suchbegriffe untersuchen
 
 ######### Klickrate
 
