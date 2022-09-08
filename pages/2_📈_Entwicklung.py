@@ -22,6 +22,7 @@ def load_data(file):
 uploaded_file2 = st.file_uploader('Report aus Vendor Central hier hochladen:', type='xlsx')
 if uploaded_file2 is not None:
     st.markdown('---')
+    df=load_data(uploaded_file2)
     df = pd.read_excel(uploaded_file2, engine='openpyxl')
     new_header = df.iloc[0]
     df = df[1:]
@@ -37,10 +38,10 @@ if uploaded_file2 is not None:
     col1, col2 = st.columns(2)
 
     with col1:
-        choice1 = st.radio('Wähle eine Henkel Marke',('Persil','Somat','WC Frisch','Perwoll','Weißer Riese','Spee'))
+        choice1 = st.radio('Wähle eine Henkel Marke',('botclean','Bref','Love Nature','Persil','Perwoll','Pril','Sidolin','Sil','Somat','Spee','Vernel','Weißer Riese','WC Frisch'))
 
     with col2:
-        choice2 = st.radio('Wähle eine Wettbewerbermarke',('Ariel','Finish','Coral','WC Ente','Frosch'))
+        choice2 = st.radio('Wähle eine Wettbewerbermarke',('Ajax','Ariel','Bissell','Cillit Bang','Coral','Dr. Beckmann','Ecover','Fairy','Finish','Frosch','Lenor','Sagrotan','Vanish','WC Ente'))
 
     choice1dollar = choice1+'$'
     choice1dollar2 = '$'+choice1
@@ -159,54 +160,62 @@ if uploaded_file2 is not None:
     st.line_chart(data=ranking, x='Woche', y=["Suchbegriff 1","Suchbegriff 2"])
 
 #########################################################################################################################
-# Generische Suchbegriffe Waschen
+# Generische Suchbegriffe
 
-######### Suchbegriff Waschen 1
+######### Suchbegriff 1
 
-    '# Generische Suchbegriffe'
+    '# Generische Suchbegriffe im Vergleich'
 
-    generisch_wäsche = df.Suchbegriff.str.contains('wäsche|waschmittel', flags = re.IGNORECASE, regex = True, na = False)
-    df_generisch_wäsche = df[generisch_wäsche]
+    wahl_generisch_=st.text_input('Hier Suchbegriff 1 eintragen')
+    generisch_ = df.Suchbegriff.str.contains(wahl_generisch_, flags = re.IGNORECASE, regex = True, na = False)
+    df_generisch_ = df[generisch_]
 
-    dropdown_generisch_wäsche = df_generisch_wäsche['Suchbegriff'].values.tolist()
-    temp_list = []
-    for i in dropdown_generisch_wäsche:
-        if i not in temp_list:
-            temp_list.append(i)
-    dropdown_generisch_wäsche = temp_list
 
-    wahl_generisch_wäsche=st.selectbox('Generischer Suchbegriff 1 Waschen:',dropdown_generisch_wäsche)
+    #dropdown_generisch_ = df_generisch_['Suchbegriff'].values.tolist()
+    #temp_list = []
+    #for i in dropdown_generisch_:
+        #if i not in temp_list:
+            #temp_list.append(i)
+    #dropdown_generisch_ = temp_list
 
-    df_generisch_wäsche_deep_a= df_generisch_wäsche.loc[(df_generisch_wäsche['Suchbegriff'] == wahl_generisch_wäsche)]
+    #wahl_generisch_=st.selectbox('Generischer Suchbegriff 1 Waschen:',dropdown_generisch_)
 
-    df_generisch_wäsche_deep_a = df_generisch_wäsche_deep_a.iloc[:, [2,15]]
-    df_generisch_wäsche_deep_a.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff Waschen 1"},inplace=True)
-    df_generisch_wäsche_deep_a['Suchbegriff Waschen 1']*= -1
+    #wahl_generisch_=st.text_input('Hier Suchbegriff 1 eintragen')
 
-    '#### Ranking des Suchbegriffs 1'
-    st.line_chart(data=df_generisch_wäsche_deep_a, x='Woche', y='Suchbegriff Waschen 1')
-######### Suchbegriff Waschen 2
-    dropdown_generisch_wäsche = df_generisch_wäsche['Suchbegriff'].values.tolist()
-    temp_list = []
-    for i in dropdown_generisch_wäsche:
-        if i not in temp_list:
-            temp_list.append(i)
-    dropdown_generisch_wäsche = temp_list
+    df_generisch__deep_a= df_generisch_.loc[(df_generisch_['Suchbegriff'] == wahl_generisch_)]
 
-    wahl_generisch_wäsche=st.selectbox('Generischer Suchbegriff 2 Waschen:',dropdown_generisch_wäsche)
 
-    df_generisch_wäsche_deep_b= df_generisch_wäsche.loc[(df_generisch_wäsche['Suchbegriff'] == wahl_generisch_wäsche)]
+    df_generisch__deep_a = df_generisch__deep_a.iloc[:, [2,15]]
+    df_generisch__deep_a.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 1"},inplace=True)
+    df_generisch__deep_a['Suchbegriff 1']*= -1
 
-    df_generisch_wäsche_deep_b = df_generisch_wäsche_deep_b.iloc[:, [2,15]]
-    df_generisch_wäsche_deep_b.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff Waschen 2"},inplace=True)
-    df_generisch_wäsche_deep_b['Suchbegriff Waschen 2']*= -1
+    #'#### Ranking des Suchbegriffs 1'
+    #st.line_chart(data=df_generisch__deep_a, x='Woche', y='Suchbegriff Waschen 1')
+######### Suchbegriff 2
+    #dropdown_generisch_ = df_generisch_['Suchbegriff'].values.tolist()
+    #temp_list = []
+    #for i in dropdown_generisch_:
+        #if i not in temp_list:
+           # temp_list.append(i)
+    #dropdown_generisch_ = temp_list
 
-    '#### Ranking des Suchbegriffs 2'
-    st.line_chart(data=df_generisch_wäsche_deep_b, x='Woche', y='Suchbegriff Waschen 2')
-######### Suchbegriff Waschen 1 und 2 im Vergleich
-    df_generisch_wäsche_deep = pd.merge(df_generisch_wäsche_deep_a, df_generisch_wäsche_deep_b, on=['Woche'])
-    df_generisch_wäsche_deep = df_generisch_wäsche_deep[['Woche','Suchbegriff Waschen 1','Suchbegriff Waschen 2']]
-    df_generisch_wäsche_deep.set_index('Woche')
+    wahl_generisch_=st.text_input('Hier Suchbegriff 2 eintragen')
+
+
+    df_generisch__deep_b= df_generisch_.loc[(df_generisch_['Suchbegriff'] == wahl_generisch_)]
+
+    df_generisch__deep_b = df_generisch__deep_b.iloc[:, [2,15]]
+    df_generisch__deep_b.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 2"},inplace=True)
+    df_generisch__deep_b['Suchbegriff 2']*= -1
+
+
+    #'#### Ranking des Suchbegriffs 2'
+    #st.line_chart(data=df_generisch__deep_b, x='Woche', y='Suchbegriff Waschen 2')
+######### Suchbegriff 1 und 2 im Vergleich
+    df_generisch__deep = pd.merge(df_generisch__deep_a, df_generisch__deep_b, on=['Woche'])
+    df_generisch__deep = df_generisch__deep[['Woche','Suchbegriff 1','Suchbegriff 2']]
+    df_generisch__deep.set_index('Woche')
+
 
     '#### Ranking der Suchbegriffe 1 und 2 im Vergleich'
-    st.line_chart(data=df_generisch_wäsche_deep, x='Woche', y=["Suchbegriff Waschen 1","Suchbegriff Waschen 2"])
+    st.line_chart(data=df_generisch__deep, x='Woche', y=["Suchbegriff 1","Suchbegriff 2"])

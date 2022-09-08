@@ -17,7 +17,7 @@ def load_data(file):
 uploaded_file1 = st.file_uploader('Report aus Vendor Central hier hochladen:', type='xlsx')
 if uploaded_file1 is not None:
     st.markdown('---')
-    df = pd.read_excel(uploaded_file1, engine='openpyxl')
+    df=load_data(uploaded_file1)
     new_header = df.iloc[0]
     df = df[1:]
     df.columns = new_header
@@ -31,11 +31,15 @@ if uploaded_file1 is not None:
     col1, col2 = st.columns(2)
 
     with col1:
-        choice1 = st.radio('Wähle eine Henkel Marke',('Persil','Somat','WC Frisch','Perwoll','Weißer Riese','Spee'))
+        choice1 = st.radio('Wähle eine Henkel Marke',('botclean','Bref','Love Nature','Persil','Perwoll','Pril','Sidolin','Sil','Somat','Spee','Vernel','Weißer Riese','WC Frisch'))
 
     with col2:
-        choice2 = st.radio('Wähle eine Wettbewerbermarke',('Ariel','Finish','Coral','WC Ente','Frosch'))
-    #Hilfestellungen###################################################################################
+        choice2 = st.radio('Wähle eine Wettbewerbermarke',('Ajax','Ariel','Bissell','Cillit Bang','Coral','Dr. Beckmann','Ecover','Fairy','Finish','Frosch','Lenor','Sagrotan','Vanish','WC Ente'))
+
+    'Hinweis: Bei Fehlermeldung sind keine Daten zur Marke hinterlegt. Einfach eine andere Marke auswählen.'
+#########################################################################################################################
+# Hilfestellungen / Muster
+
     choice1dollar = choice1+'$'
     choice1dollar2 = '$'+choice1
     choice1space = choice1+ ' '
@@ -71,21 +75,23 @@ if uploaded_file1 is not None:
     toppersilariel = toppersilariel.dropna()
     toppersilariel.drop(columns=['Abteilung'],inplace=True)
     toppersilariel.reset_index(drop= True, inplace = True)
-    ###################################################################################################
+
+#########################################################################################################################
+# einzelnes Ranking
 
     col1, col2 = st.columns(2)
 
     with col1:
         "####  Ranking Suchbegriffe rund um Henkel Marke:"
         dropdown_persil = toppersil['Suchbegriff'].values.tolist()
-        optionpersil = st.selectbox('Wähle einen Suchbegriff',dropdown_persil)
+        optionpersil = st.selectbox('Wähle einen Suchbegriff (Henkel)',dropdown_persil)
         persil = df.loc[(df['Suchbegriff'] == optionpersil)]
         persil.reset_index(drop=True,inplace=True)
 
     with col2:
         "####  Ranking Suchbegriffe rund um Wettbewerbermarke:"
         dropdown_ariel = topariel['Suchbegriff'].values.tolist()
-        optionariel = st.selectbox('Wähle einen Suchbegriff',dropdown_ariel)
+        optionariel = st.selectbox('Wähle einen Suchbegriff (Wettbewerb)',dropdown_ariel)
         ariel = df.loc[(df['Suchbegriff'] == optionariel)]
         ariel.reset_index(drop=True,inplace=True)
 
@@ -101,6 +107,9 @@ if uploaded_file1 is not None:
 
         st.write('Der Suchbegriff',optionariel, 'belegt im Ranking Platz', ariel.loc[0]['Suchfrequenz-Rang '],'von',df['Suchfrequenz-Rang '].iat[-1])
 
+#########################################################################################################################
+# TOP Suchbegriffe
+
     '#### TOP Suchbegriffe rund um Henkel Marke:'
     st.dataframe(toppersil)
 
@@ -109,6 +118,9 @@ if uploaded_file1 is not None:
 
     '#### TOP Suchbegriffe rund um Henkel Marke und Wettbewerbermarke:'
     st.dataframe(toppersilariel)
+
+#########################################################################################################################
+# TOP geklickt
 
     '#### Henkel Marke unter den TOP 3 der angeklickten ASINs:'
     df.rename(columns={"Produkttitel #1": "col1","Produkttitel #2": "col2","Produkttitel #3": "col3"},inplace=True)
@@ -123,6 +135,7 @@ if uploaded_file1 is not None:
     products_persil.drop(columns=['Abteilung'],inplace=True)
     products_persil.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
     products_persil.rename(columns={'col1':'Produktname #1','col2':'Produktname #2','col3':'Produktname #3'},inplace=True)
+    products_persil.reset_index(drop= True, inplace = True)
     st.dataframe(products_persil)
 
     '#### Wettbewerbermarke unter den TOP 3 der angeklickten ASINs:'
@@ -137,58 +150,69 @@ if uploaded_file1 is not None:
     products_ariel.drop(columns=['Abteilung'],inplace=True)
     products_ariel.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
     products_ariel.rename(columns={'col1':'Produktname #1','col2':'Produktname #2','col3':'Produktname #3'},inplace=True)
+    products_ariel.reset_index(drop= True, inplace = True)
     st.dataframe(products_ariel)
+
+######### Unterschiede in den Marken
 
     col1, col2 = st.columns(2)
 
     with col1:
+        c1 = c1.lower()
         st.caption('Generische Suchbegriffe, bei denen unter den TOP 3 geklickten Produkten nur die Henkel Marke auftaucht und nicht die Wettbewerbermarke')
         vergleich_persil = products_persil
         vergleich_persil = vergleich_persil[vergleich_persil['Produktname #1'].str.contains(c2) == False]
         vergleich_persil = vergleich_persil[vergleich_persil['Produktname #2'].str.contains(c2) == False]
         vergleich_persil = vergleich_persil[vergleich_persil['Produktname #3'].str.contains(c2) == False]
-        #vergleich_persil = vergleich_persil[vergleich_persil['Suchbegriff'].str.contains(c1) == False]
-        vergleich_persil = vergleich_persil[vergleich_persil.Suchbegriff != c1]
-        vergleich_persil.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
+        vergleich_persil = vergleich_persil[vergleich_persil['Suchbegriff'].str.contains(c1) == False]
         vergleich_persil = vergleich_persil.iloc[: , [0,1]]
         vergleich_persil['Marke'] = choice1
+        vergleich_persil.reset_index(drop= True, inplace = True)
         vergleich_persil
 
-
     with col2:
+        c2 = c2.lower()
         st.caption('Generische Suchbegriffe, bei denen unter den TOP 3 geklickten Produkten nur die Wettbewerbermarke auftaucht und nicht die Henkel Marke')
         vergleich_ariel = products_ariel
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #1'].str.contains(choice1) == False]
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #2'].str.contains(choice1) == False]
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #3'].str.contains(choice1) == False]
-        vergleich_ariel = vergleich_ariel[vergleich_ariel['Suchbegriff'].str.contains(choice2) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #1'].str.contains(c1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #2'].str.contains(c1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Produktname #3'].str.contains(c1) == False]
+        vergleich_ariel = vergleich_ariel[vergleich_ariel['Suchbegriff'].str.contains(c2) == False]
         vergleich_ariel.sort_values(by=['Suchfrequenz-Rang '],inplace=True)
         vergleich_ariel = vergleich_ariel.iloc[: , [0,1]]
         vergleich_ariel['Marke'] = choice2
+        vergleich_ariel.reset_index(drop= True, inplace = True)
         vergleich_ariel
 
-    '#### TOP 3 Klickrate des Suchbegriffs'
+#########################################################################################################################
+# einzelne Suchbegriffe
+
+######### Klickrate
+
+    '#### TOP 3 Klick- und Umsatzrate des Suchbegriffs'
     title = st.text_input('Suchbegriff', 'Trage hier den gewünschten Suchbegriff ein')
     if title != "Trage hier den gewünschten Suchbegriff ein":
-        waschmittelpods = df.loc[(df['Suchbegriff'] == title)]
-        waschmittelpods1 = waschmittelpods[['col1','Klickrate #1']]
-        waschmittelpods1.rename(columns={'col1':'Produktname','Klickrate #1':'Klickrate'},inplace=True)
-        waschmittelpods2 = waschmittelpods[['col2','Klickrate #2']]
-        waschmittelpods2.rename(columns={'col2':'Produktname','Klickrate #2':'Klickrate'},inplace=True)
-        waschmittelpods3 = waschmittelpods[['col3','Klickrate #3']]
-        waschmittelpods3.rename(columns={'col3':'Produktname','Klickrate #3':'Klickrate'},inplace=True)
-        waschmittelpodssum = pd.concat([waschmittelpods1, waschmittelpods2, waschmittelpods3]).drop_duplicates().reset_index(drop=True)
-        waschmittelpodssum['Produkt'] = waschmittelpodssum['Produktname'].str.split().str[:4].str.join(sep=" ")
-        waschmittelpodssum = waschmittelpodssum.drop('Produktname',axis=1)
-        waschmittelpodssum['Klickrate']=pd.to_numeric(waschmittelpodssum['Klickrate'])
-        waschmittelpodssum.loc['sum']=1-waschmittelpodssum.sum(numeric_only=True, axis=0)
-        waschmittelpodssum.replace(np.nan,'Others',inplace=True)
-        labels = waschmittelpodssum['Produkt'].value_counts().index
-        values = waschmittelpodssum['Klickrate'].values
+        klickrate = df.loc[(df['Suchbegriff'] == title)]
+        klickrate1 = klickrate[['col1','Klickrate #1']]
+        klickrate1.rename(columns={'col1':'Produktname','Klickrate #1':'Klickrate'},inplace=True)
+        klickrate2 = klickrate[['col2','Klickrate #2']]
+        klickrate2.rename(columns={'col2':'Produktname','Klickrate #2':'Klickrate'},inplace=True)
+        klickrate3 = klickrate[['col3','Klickrate #3']]
+        klickrate3.rename(columns={'col3':'Produktname','Klickrate #3':'Klickrate'},inplace=True)
+        klickratesum = pd.concat([klickrate1, klickrate2, klickrate3]).drop_duplicates().reset_index(drop=True)
+        klickratesum['Produkt'] = klickratesum['Produktname'].str.split().str[:4].str.join(sep=" ")
+        klickratesum = klickratesum.drop('Produktname',axis=1)
+        klickratesum['Klickrate']=pd.to_numeric(klickratesum['Klickrate'])
+        klickratesum.loc['sum']=1-klickratesum.sum(numeric_only=True, axis=0)
+        klickratesum.replace(np.nan,'Others',inplace=True)
+        labels = klickratesum['Produkt'].value_counts().index
+        values = klickratesum['Klickrate'].values
 
         bridge = df.loc[(df['Suchbegriff'] == title)]
         bridge.reset_index(drop=True,inplace=True)
         st.write('Der Suchbegriff',title, 'belegt im Ranking Platz', bridge.loc[0]['Suchfrequenz-Rang '])
+
+        '#### TOP 3 Klickrate des Suchbegriffs'
 
         fig = go.Figure(
             go.Pie(
@@ -199,8 +223,36 @@ if uploaded_file1 is not None:
             ))
         st.plotly_chart(fig)
 
+######### Umsatzrate
+        umsatzrate = df.loc[(df['Suchbegriff'] == title)]
+        umsatzrate1 = umsatzrate[['col1','Umsatzrate #1']]
+        umsatzrate1.rename(columns={'col1':'Produktname','Umsatzrate #1':'Umsatzrate'},inplace=True)
+        umsatzrate2 = umsatzrate[['col2','Umsatzrate #2']]
+        umsatzrate2.rename(columns={'col2':'Produktname','Umsatzrate #2':'Umsatzrate'},inplace=True)
+        umsatzrate3 = umsatzrate[['col3','Umsatzrate #3']]
+        umsatzrate3.rename(columns={'col3':'Produktname','Umsatzrate #3':'Umsatzrate'},inplace=True)
+        umsatzratesum = pd.concat([umsatzrate1, umsatzrate2, umsatzrate3]).drop_duplicates().reset_index(drop=True)
+        umsatzratesum['Produkt'] = umsatzratesum['Produktname'].str.split().str[:4].str.join(sep=" ")
+        umsatzratesum = umsatzratesum.drop('Produktname',axis=1)
+        umsatzratesum['Umsatzrate']=pd.to_numeric(umsatzratesum['Umsatzrate'])
+        umsatzratesum.loc['sum']=1-umsatzratesum.sum(numeric_only=True, axis=0)
+        umsatzratesum.replace(np.nan,'Others',inplace=True)
+        labels2 = umsatzratesum['Produkt'].value_counts().index
+        values2 = umsatzratesum['Umsatzrate'].values
+
+        '#### TOP 3 Umsatzrate des Suchbegriffs'
+
+        fig2 = go.Figure(
+            go.Pie(
+                labels = labels2,
+                values = values2,
+                hoverinfo = "label+percent",
+                textinfo = "percent"
+            ))
+        st.plotly_chart(fig2)
+#########################################################################################################################
     st.caption('Kontakt: Judith Paaßen (judith.paassen@henkel.com)')
-    ###################################################################################################
+#########################################################################################################################
 
 
 
