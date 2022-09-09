@@ -1,19 +1,18 @@
 import os
 import pandas as pd
 import streamlit as st
-#import numpy as np
-#import plotly.express as px
 cwd = os.path.abspath('')
 import re
-import altair as alt
 #%%
 st.set_page_config(page_title='Entwicklung von Suchbegriffen im Vergleich')
 st.title('Entwicklung von Suchbegriffen im Vergleich')
-st.write('Für folgende Auswertung die Mastertabelle (...) um die ersten 50.000 Zeilen der aktuellen KW ergänzen, und mit dem ensprechenden Zeistempel '
-         'ergänzen. Aktuelle Reporte stammen aus Vendor Central: https://vendorcentral.amazon.de/analytics/dashboard/searchTerms '
-         ''
-         'Auswertungsbereich: '
-         'wöchentlich, Abteilung: Amazon.de')
+st.write('Für folgende Auswertung die Mastertabellen (https://henkelgroup.sharepoint.com/teams/MST-L-LEGEComTeam/Shared%20Documents/Forms/AllItems.aspx?csf=1&web=1&e=snGgkx&OR=Teams%2DHL&CT=1662726602405&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiIyNy8yMjA3MzEwMTAwNSIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D&cid=279365d0%2D029a%2D4859%2D8d75%2D8f8ca6400927&RootFolder=%2Fteams%2FMST%2DL%2DLEGEComTeam%2FShared%20Documents%2FGeneral%2F1%5FAmazon%2FTools%204%20Amazon%2FJudith%20Streamlit%20App&FolderCTID=0x012000D6892CF00C98694EBC4249412BCFC103) '
+         'um die aktuellen Werte ergänzen, und mit dem ensprechenden Zeistempel '
+         'versehen. Aktuelle Reporte stammen aus Vendor Central: https://vendorcentral.amazon.de/analytics/dashboard/searchTerms '
+         'Für weitere Hinweise siehe separate Excel Templates. '
+         ' '
+         'Auswertungsbereich: wöchentlich oder monatlich '
+         'Abteilung: Amazon.de')
 #%%
 @st.cache(allow_output_mutation=True)
 def load_data(file):
@@ -33,25 +32,20 @@ if uploaded_file2 is not None:
     df['Suchfrequenz-Rang ']=pd.to_numeric(df['Suchfrequenz-Rang '])
     df['Suchfrequenz-Rang ']=df['Suchfrequenz-Rang '].astype(int)
 
+#########################################################################################################################
+# Markenspezifische je Marke untersuchen
+
     '# Markenspezifische Suchbegriffe'
 
     col1, col2 = st.columns(2)
-
     with col1:
         choice1 = st.radio('Wähle eine Henkel Marke',('botclean','Bref','Love Nature','Persil','Perwoll','Pril','Sidolin','Sil','Somat','Spee','Vernel','Weißer Riese','WC Frisch'))
-
     with col2:
         choice2 = st.radio('Wähle eine Wettbewerbermarke',('Ajax','Ariel','Bissell','Cillit Bang','Coral','Dr. Beckmann','Ecover','Fairy','Finish','Frosch','Lenor','Sagrotan','Vanish','WC Ente'))
 
-    choice1dollar = choice1+'$'
-    choice1dollar2 = '$'+choice1
-    choice1space = choice1+ ' '
-    choice1space2 = ' '+choice1
-    choice1combined = [choice1, choice1dollar, choice1dollar2, choice1space, choice1space2]
-    c1= '|'.join(choice1combined)
-    c1 = '"'+c1+'"'
+    search1 = '\\b(' + choice1 + ')\\b'
 
-    dsi = df.Suchbegriff.str.contains(c1, flags = re.IGNORECASE, regex = True, na = False)
+    dsi = df.Suchbegriff.str.contains(search1, flags = re.IGNORECASE, regex = True, na = False)
     df1 = df[dsi]
 
     dropdown_persil = df1['Suchbegriff'].values.tolist()
@@ -70,7 +64,7 @@ if uploaded_file2 is not None:
     ranking1['Suchbegriff 1']*= -1
 
     '#### Ranking des Suchbegriffs 1'
-    st.line_chart(data=ranking1, x='Woche', y='Suchbegriff 1')
+    st.line_chart(data=ranking1, x='Periode', y='Suchbegriff 1')
 
 ######################
     entwicklungppb1 = persilpowerbar.iloc[:, [4,5,15]]
@@ -86,7 +80,7 @@ if uploaded_file2 is not None:
     entwicklungppb = entwicklungppb.dropna()
     entwicklungppb['Produkttitel'] = entwicklungppb['Produkttitel'].str.split(',').str[0]
 
-    entwicklungppb=entwicklungppb.pivot(index='Woche',columns='Produkttitel',values='Klickrate')
+    entwicklungppb=entwicklungppb.pivot_table(index='Periode',columns='Produkttitel',values='Klickrate')
 
     entwicklungppb = entwicklungppb.fillna(0)
 
@@ -97,15 +91,9 @@ if uploaded_file2 is not None:
 
 ######################
 
-    choice2dollar = choice2+'$'
-    choice2dollar2 = '$'+choice2
-    choice2space = choice2+ ' '
-    choice2space2 = ' '+choice2
-    choice2combined = [choice2, choice2dollar, choice2dollar2, choice2space, choice2space2]
-    c2= '|'.join(choice2combined)
-    c2 = '"'+c2+'"'
+    search2 = '\\b(' + choice2 + ')\\b'
 
-    dsi2 = df.Suchbegriff.str.contains(c2, flags = re.IGNORECASE, regex = True, na = False)
+    dsi2 = df.Suchbegriff.str.contains(search2, flags = re.IGNORECASE, regex = True, na = False)
     df12 = df[dsi2]
 
     dropdown_persil = df12['Suchbegriff'].values.tolist()
@@ -123,12 +111,12 @@ if uploaded_file2 is not None:
     ranking2.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 2"},inplace=True)
     ranking2['Suchbegriff 2']*= -1
 
-    ranking = pd.merge(ranking1, ranking2, on=['Woche'])
-    ranking = ranking[['Woche','Suchbegriff 1','Suchbegriff 2']]
-    ranking.set_index('Woche')
+    ranking = pd.merge(ranking1, ranking2, on=['Periode'])
+    ranking = ranking[['Periode','Suchbegriff 1','Suchbegriff 2']]
+    ranking.set_index('Periode')
 
     '#### Ranking des Suchbegriffs 2'
-    st.line_chart(data=ranking2, x='Woche', y='Suchbegriff 2')
+    st.line_chart(data=ranking2, x='Periode', y='Suchbegriff 2')
 
 ######################
 
@@ -145,7 +133,7 @@ if uploaded_file2 is not None:
     entwicklungppb_b = entwicklungppb_b.dropna()
     entwicklungppb_b['Produkttitel'] = entwicklungppb_b['Produkttitel'].str.split(',').str[0]
 
-    entwicklungppb_b=entwicklungppb_b.pivot(index='Woche',columns='Produkttitel',values='Klickrate')
+    entwicklungppb_b=entwicklungppb_b.pivot_table(index='Periode',columns='Produkttitel',values='Klickrate')
 
     entwicklungppb_b = entwicklungppb_b.fillna(0)
 
@@ -154,53 +142,32 @@ if uploaded_file2 is not None:
     '#### Verteilung der TOP 3 geklickten Produkte von Suchbegriff 2'
     st.bar_chart(data=entwicklungppb_b)
 
-######################
+#########################################################################################################################
+# Suchbegriffe im Vergleich
 
     '#### Ranking der Suchbegriffe 1 und 2 im Vergleich'
-    st.line_chart(data=ranking, x='Woche', y=["Suchbegriff 1","Suchbegriff 2"])
+    st.line_chart(data=ranking, x='Periode', y=["Suchbegriff 1","Suchbegriff 2"])
 
 #########################################################################################################################
-# Generische Suchbegriffe
+# Suchbegriffe im Vergleich
 
 ######### Suchbegriff 1
 
-    '# Generische Suchbegriffe im Vergleich'
+    '# Suchbegriffe im Vergleich'
 
     wahl_generisch_=st.text_input('Hier Suchbegriff 1 eintragen')
     generisch_ = df.Suchbegriff.str.contains(wahl_generisch_, flags = re.IGNORECASE, regex = True, na = False)
     df_generisch_ = df[generisch_]
 
-
-    #dropdown_generisch_ = df_generisch_['Suchbegriff'].values.tolist()
-    #temp_list = []
-    #for i in dropdown_generisch_:
-        #if i not in temp_list:
-            #temp_list.append(i)
-    #dropdown_generisch_ = temp_list
-
-    #wahl_generisch_=st.selectbox('Generischer Suchbegriff 1 Waschen:',dropdown_generisch_)
-
-    #wahl_generisch_=st.text_input('Hier Suchbegriff 1 eintragen')
-
     df_generisch__deep_a= df_generisch_.loc[(df_generisch_['Suchbegriff'] == wahl_generisch_)]
-
 
     df_generisch__deep_a = df_generisch__deep_a.iloc[:, [2,15]]
     df_generisch__deep_a.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 1"},inplace=True)
     df_generisch__deep_a['Suchbegriff 1']*= -1
 
-    #'#### Ranking des Suchbegriffs 1'
-    #st.line_chart(data=df_generisch__deep_a, x='Woche', y='Suchbegriff Waschen 1')
 ######### Suchbegriff 2
-    #dropdown_generisch_ = df_generisch_['Suchbegriff'].values.tolist()
-    #temp_list = []
-    #for i in dropdown_generisch_:
-        #if i not in temp_list:
-           # temp_list.append(i)
-    #dropdown_generisch_ = temp_list
 
     wahl_generisch_=st.text_input('Hier Suchbegriff 2 eintragen')
-
 
     df_generisch__deep_b= df_generisch_.loc[(df_generisch_['Suchbegriff'] == wahl_generisch_)]
 
@@ -208,14 +175,10 @@ if uploaded_file2 is not None:
     df_generisch__deep_b.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 2"},inplace=True)
     df_generisch__deep_b['Suchbegriff 2']*= -1
 
-
-    #'#### Ranking des Suchbegriffs 2'
-    #st.line_chart(data=df_generisch__deep_b, x='Woche', y='Suchbegriff Waschen 2')
 ######### Suchbegriff 1 und 2 im Vergleich
-    df_generisch__deep = pd.merge(df_generisch__deep_a, df_generisch__deep_b, on=['Woche'])
-    df_generisch__deep = df_generisch__deep[['Woche','Suchbegriff 1','Suchbegriff 2']]
-    df_generisch__deep.set_index('Woche')
-
+    df_generisch__deep = pd.merge(df_generisch__deep_a, df_generisch__deep_b, on=['Periode'])
+    df_generisch__deep = df_generisch__deep[['Periode','Suchbegriff 1','Suchbegriff 2']]
+    df_generisch__deep.set_index('Periode')
 
     '#### Ranking der Suchbegriffe 1 und 2 im Vergleich'
-    st.line_chart(data=df_generisch__deep, x='Woche', y=["Suchbegriff 1","Suchbegriff 2"])
+    st.line_chart(data=df_generisch__deep, x='Periode', y=["Suchbegriff 1","Suchbegriff 2"])
