@@ -155,30 +155,26 @@ if uploaded_file2 is not None:
 
     '# Suchbegriffe im Vergleich'
 
-    wahl_generisch_=st.text_input('Hier Suchbegriff 1 eintragen')
-    generisch_ = df.Suchbegriff.str.contains(wahl_generisch_, flags = re.IGNORECASE, regex = True, na = False)
-    df_generisch_ = df[generisch_]
+    wahl_generisch1=st.text_input('Hier Suchbegriff 1 eintragen')
 
-    df_generisch__deep_a= df_generisch_.loc[(df_generisch_['Suchbegriff'] == wahl_generisch_)]
-
-    df_generisch__deep_a = df_generisch__deep_a.iloc[:, [2,15]]
-    df_generisch__deep_a.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 1"},inplace=True)
-    df_generisch__deep_a['Suchbegriff 1']*= -1
+    df_generisch1= df.loc[(df['Suchbegriff'] == wahl_generisch1)]
+    df_generisch1 = df_generisch1.iloc[:, [2,15]]
+    df_generisch1.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 1"},inplace=True)
+    df_generisch1['Suchbegriff 1']*= -1
 
 ######### Suchbegriff 2
 
-    wahl_generisch_=st.text_input('Hier Suchbegriff 2 eintragen')
+    wahl_generisch2=st.text_input('Hier Suchbegriff 2 eintragen')
 
-    df_generisch__deep_b= df_generisch_.loc[(df_generisch_['Suchbegriff'] == wahl_generisch_)]
-
-    df_generisch__deep_b = df_generisch__deep_b.iloc[:, [2,15]]
-    df_generisch__deep_b.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 2"},inplace=True)
-    df_generisch__deep_b['Suchbegriff 2']*= -1
+    df_generisch2= df.loc[(df['Suchbegriff'] == wahl_generisch2)]
+    df_generisch2 = df_generisch2.iloc[:, [2,15]]
+    df_generisch2.rename(columns={"Suchfrequenz-Rang ": "Suchbegriff 2"},inplace=True)
+    df_generisch2['Suchbegriff 2']*= -1
 
 ######### Suchbegriff 1 und 2 im Vergleich
-    df_generisch__deep = pd.merge(df_generisch__deep_a, df_generisch__deep_b, on=['Periode'])
-    df_generisch__deep = df_generisch__deep[['Periode','Suchbegriff 1','Suchbegriff 2']]
-    df_generisch__deep.set_index('Periode')
+    df_generisch = pd.merge(df_generisch1, df_generisch2, on=['Periode'])
+    df_generisch = df_generisch[['Periode','Suchbegriff 1','Suchbegriff 2']]
+    df_generisch.set_index('Periode')
 
     '#### Ranking der Suchbegriffe 1 und 2 im Vergleich'
-    st.line_chart(data=df_generisch__deep, x='Periode', y=["Suchbegriff 1","Suchbegriff 2"])
+    st.line_chart(data=df_generisch, x='Periode', y=["Suchbegriff 1","Suchbegriff 2"])
