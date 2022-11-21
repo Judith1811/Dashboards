@@ -4,13 +4,11 @@ import regex as re
 import numpy as np
 import plotly.graph_objs as go
 
-st.set_page_config(page_title='Amazon Suchvolumen Persil')
 st.title('Amazon Suchvolumen')
 st.subheader('Henkel vs. Wettbewerber')
 st.write('Für folgende Auswertung den aktuellen Report aus Vendor Central (https://vendorcentral.amazon.de/analytics/dashboard/searchTerms) herunterladen. '
          'Auswertungsbereich frei wählbar und Abteilung "Amazon.de" oder "Drugstore" möglich.')
 
-@st.cache(allow_output_mutation=True)
 def load_data(file):
     df = pd.read_excel(file)
     return df
